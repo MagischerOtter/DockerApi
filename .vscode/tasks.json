@@ -1,0 +1,52 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/DockerApi.sln",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build-docker-image",
+            "type": "shell",
+            "command": "docker build -t 192.168.0.36:5000/dockerapi:$(git rev-parse HEAD) -t 192.168.0.36:5000/dockerapi:latest -f ${workspaceFolder}/dockerfile ${workspaceFolder}",
+            "dependsOn": [
+                "build"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "push-docker-image-latest",
+            "type": "shell",
+            "command": "docker push 192.168.0.36:5000/dockerapi:latest",
+            "dependsOn": [
+                "build-docker-image"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "push-docker-image-git-hash",
+            "type": "shell",
+            "command": "docker push 192.168.0.36:5000/dockerapi:$(git rev-parse HEAD)",
+            "dependsOn": [
+                "build-docker-image"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "push-docker-image-both",
+            "dependsOn":[
+                "push-docker-image-latest",
+                "push-docker-image-git-hash"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
