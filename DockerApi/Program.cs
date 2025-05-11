@@ -70,10 +70,13 @@ app.MapGet("/docker/recreate/{ContainerName}", async (string containerName) =>
             Log.Error(new DockerContainerNotFoundException(HttpStatusCode.NotFound, $"Container {containerName} not found."), "DockerContainerNotFoundException");
             throw new DockerContainerNotFoundException(HttpStatusCode.NotFound, $"Container {containerName} not found.");
         }
+
+        var inspection = await client.Containers.InspectContainerAsync(existingContainer.ID);
+
         int lastIndex = existingContainer.Image.AsSpan().LastIndexOf(':');
         string imageName = existingContainer.Image.AsSpan()[..lastIndex].ToString();
-        string imageTag = ":latest";
-        string imageNameTag = imageName + imageTag;
+        string imageTag = "latest";
+        string imageNameTag = imageName + ":" + imageTag;
 
         AuthConfig? authConfig = null;
 
@@ -102,6 +105,7 @@ app.MapGet("/docker/recreate/{ContainerName}", async (string containerName) =>
             Image = imageNameTag,
             Name = containerName,
             ExposedPorts = exposedPorts,
+            Env = inspection.Config.Env,
             HostConfig = new HostConfig
             {
                 Binds = existingContainer.Mounts?.Select(m => $"{m.Source}:{m.Destination}").ToList(),
