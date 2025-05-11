@@ -1,7 +1,7 @@
+using CliWrap;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using Serilog;
-using System.ComponentModel;
 using System.Net;
 using System.Runtime.InteropServices;
 
@@ -73,16 +73,18 @@ app.MapGet("/docker/recreate/{ContainerName}", async (string containerName) =>
         }
         int lastIndex = existingContainer.Image.AsSpan().LastIndexOf(':');
         string imageName = existingContainer.Image.AsSpan()[..lastIndex].ToString();
-        string imageTag = "latest";
-        string imageNameTag = imageName + ":" + imageTag;
+        string imageTag = ":latest";
+        string imageNameTag = imageName + imageTag;
 
         Log.Information("Pulling image: " + imageNameTag);
 
-        await client.Images.CreateImageAsync(new ImagesCreateParameters
-        {
-            FromImage = imageName,
-            Tag = imageTag
-        }, null, new Progress<JSONMessage>());
+        await Cli.Wrap("docker").WithArguments(["pull", imageNameTag]).ExecuteAsync();
+
+        // await client.Images.CreateImageAsync(new ImagesCreateParameters
+        // {
+        //     FromImage = imageName,
+        //     Tag = imageTag
+        // }, null, new Progress<JSONMessage>());
 
         var portBindings = GetPortBindings(existingContainer);
         var exposedPorts = GetExposedPorts(existingContainer);
