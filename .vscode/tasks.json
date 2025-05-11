@@ -16,7 +16,7 @@
         {
             "label": "build-docker-image",
             "type": "shell",
-            "command": "docker build -t 192.168.0.36:5000/dockerapi:$(git rev-parse HEAD) -t 192.168.0.36:5000/dockerapi:latest -f ${workspaceFolder}/dockerfile ${workspaceFolder}",
+            "command": "docker build -t 192.168.0.36:5000/dockerapi:$(git rev-parse HEAD) -t 192.168.0.36:5000/dockerapi:latest -t ghcr.io/magischerotter/dockerapi:latest -f ${workspaceFolder}/dockerfile ${workspaceFolder}",
             "dependsOn": [
                 "build"
             ],
@@ -26,6 +26,15 @@
             "label": "push-docker-image-latest",
             "type": "shell",
             "command": "docker push 192.168.0.36:5000/dockerapi:latest",
+            "dependsOn": [
+                "build-docker-image"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "push-docker-image-latest-ghcr",
+            "type": "shell",
+            "command": "docker push ghcr.io/magischerotter/dockerapi:latest",
             "dependsOn": [
                 "build-docker-image"
             ],
@@ -42,7 +51,7 @@
         },
         {
             "label": "push-docker-image-both",
-            "dependsOn":[
+            "dependsOn": [
                 "push-docker-image-latest",
                 "push-docker-image-git-hash"
             ],

@@ -1,4 +1,3 @@
-using CliWrap;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using Serilog;
@@ -76,15 +75,23 @@ app.MapGet("/docker/recreate/{ContainerName}", async (string containerName) =>
         string imageTag = ":latest";
         string imageNameTag = imageName + imageTag;
 
+        AuthConfig? authConfig = null;
+
+        if(imageNameTag.StartsWith("ghcr.io"))
+        {
+            authConfig = new();
+            authConfig.ServerAddress = "ghcr.io";
+            authConfig.Username = Environment.GetEnvironmentVariable("GHCR_USERNAME");
+            authConfig.Password = Environment.GetEnvironmentVariable("GHCR_PASSWORD");
+        }
+
         Log.Information("Pulling image: " + imageNameTag);
 
-        await Cli.Wrap("docker").WithArguments(["pull", imageNameTag]).ExecuteAsync();
-
-        // await client.Images.CreateImageAsync(new ImagesCreateParameters
-        // {
-        //     FromImage = imageName,
-        //     Tag = imageTag
-        // }, null, new Progress<JSONMessage>());
+        await client.Images.CreateImageAsync(new ImagesCreateParameters
+        {
+            FromImage = imageName,
+            Tag = imageTag
+        }, authConfig, new Progress<JSONMessage>());
 
         var portBindings = GetPortBindings(existingContainer);
         var exposedPorts = GetExposedPorts(existingContainer);
