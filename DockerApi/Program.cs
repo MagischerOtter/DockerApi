@@ -23,6 +23,7 @@ if (app.Environment.IsDevelopment())
 
 // Map the endpoint
 app.MapRecreateEndpoint();
+app.MapRestartEndpoint();
 
 
 // Start the server.
