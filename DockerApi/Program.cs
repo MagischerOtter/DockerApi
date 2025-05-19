@@ -24,6 +24,7 @@ if (app.Environment.IsDevelopment())
 // Map the endpoint
 app.MapRecreateEndpoint();
 app.MapRestartEndpoint();
+app.MapStatsEndpoint();
 
 
 // Start the server.
