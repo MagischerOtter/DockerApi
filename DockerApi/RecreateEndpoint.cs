@@ -40,6 +40,12 @@ public static class RecreateEndpoint
                 var inspection = await client.Containers.InspectContainerAsync(existingContainer.ID);
 
                 int lastIndex = existingContainer.Image.AsSpan().LastIndexOf(':');
+
+                if (lastIndex == -1)
+                {
+                    lastIndex = existingContainer.Image.AsSpan().Length;
+                }
+
                 string imageName = existingContainer.Image.AsSpan()[..lastIndex].ToString();
                 string imageTag = "latest";
                 string imageNameTag = imageName + ":" + imageTag;
