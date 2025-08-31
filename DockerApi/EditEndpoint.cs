@@ -30,7 +30,6 @@ public static class EditEndpoint
             //Check if the image exists
             if (existingContainer is null)
             {
-                Log.Error(new DockerContainerNotFoundException(HttpStatusCode.NotFound, $"Container {containerName} not found."), "DockerContainerNotFoundException");
                 throw new DockerContainerNotFoundException(HttpStatusCode.NotFound, $"Container {containerName} not found.");
             }
 
@@ -39,6 +38,7 @@ public static class EditEndpoint
             var totalCores = systemInfo.NCPU;
 
             var updateParams = new ContainerUpdateParameters();
+
 
             if (request.CpuLimitPercent.HasValue)
             {
@@ -52,13 +52,15 @@ public static class EditEndpoint
                 // Calculate the number of cores to use based on the percentage
                 var coresToUse = totalCores * request.CpuLimitPercent.Value;
 
-                // Dynamically calculate the CPU quota based on the request.
-                const long cpuPeriod = 100000; // Standard 100ms period
-                updateParams.CPUPeriod = cpuPeriod;
-                updateParams.CPUQuota = (long)(coresToUse * cpuPeriod);
+                // To resolve the "Conflicting options" error, we must update NanoCpus directly.
+                // This is the modern equivalent of setting --cpus and avoids conflicts with
+                // containers that were created using that flag.
+                // 1 CPU core = 1,000,000,000 NanoCPUs.
+                const long nanoCpuFactor = 1_000_000_000;
+                updateParams.NanoCPUs = (long)(coresToUse * nanoCpuFactor);
 
-                Log.Information("Calculating CPU limit: {TotalCores} (host cores) * {CpuPercent:P} = {CoresToUse:F2} cores. Setting CpuQuota to {CpuQuota}",
-                    totalCores, request.CpuLimitPercent.Value, coresToUse, updateParams.CPUQuota);
+                Log.Information("Calculating CPU limit: {TotalCores} (host cores) * {CpuPercent:P} = {CoresToUse:F2} cores. Setting NanoCpus to {NanoCpus}",
+                    totalCores, request.CpuLimitPercent.Value, coresToUse, updateParams.NanoCPUs);
             }
 
             await client.Containers.UpdateContainerAsync(existingContainer.ID, updateParams);
