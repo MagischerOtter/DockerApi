@@ -25,7 +25,7 @@ if (app.Environment.IsDevelopment())
 app.MapRecreateEndpoint();
 app.MapRestartEndpoint();
 app.MapStatsEndpoint();
-
+app.MapEditEndpoint();
 
 // Start the server.
 app.Run();
