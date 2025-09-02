@@ -27,7 +27,7 @@ public static class RecreateEndpoint
             try
             {
                 // 1. Stop and Remove the existing container
-                var containers = await client.Containers.ListContainersAsync(new ContainersListParameters());
+                var containers = await client.Containers.ListContainersAsync(new () { All = true });
                 var existingContainer = containers.FirstOrDefault(c => c.Names.Contains("/" + containerName));
 
                 //Check if the image exists
